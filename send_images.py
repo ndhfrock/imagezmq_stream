@@ -1,14 +1,10 @@
-"""timing_send_images.py -- send PiCamera image stream.
+"""
+timing_send_images.py -- send image stream.
 
-A Raspberry Pi test program that uses imagezmq to send image frames from the
-PiCamera continuously to a receiving program on a Mac that will display the
+A test program that uses imagezmq to send image frames from the
+client continuously to a receiving program on another device that will display the
 images as a video stream.
 
-This program requires that the image receiving program be running first. Brief
-test instructions are in that program: timing_receive_images.py.
-
-This program can turn an LED on and off if needed; assumes BCM pin 18. This
-can help with lighting the subject area in front of the PiCamera.
 """
 
 import sys
@@ -16,43 +12,54 @@ import sys
 import socket
 import time
 import traceback
-import cv2
 from imutils.video import VideoStream
 import imagezmq
+from cv2 import cv2
 from datetime import datetime
-#import RPi.GPIO as GPIO
 
+# Font for Text on video
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-# use either of the formats below to specifiy address of display computer
-# sender = imagezmq.ImageSender(connect_to='tcp://jeff-macbook:5555')
-#sender = imagezmq.ImageSender(connect_to='tcp://*:5555', REQ_REP=False)
-sender = imagezmq.ImageSender(connect_to='tcp://127.0.0.1:5555')
+# IP address receiver
+if len(sys.argv) == 2 : # If there is no ip address input
+    ipAddress = 'tcp://*:6666'
+    print ("Sending to = " + ipAddress)
+elif len(sys.argv) == 3 : # If there is ip address input
+    ipAddress = 'tcp://'+sys.argv[2]+':6666'
+    print ("Sending to = " + ipAddress)
+else :
+    print ("Error on ip address input")
+    sys.exit()
 
-# optionally, turn on the LED area lighting
-#use_led = False  # set to True or False as needed
+# Specify the type messaging and receiver ip address
+# 1 for REQ/REP messaging
+# 2 for PUB/SUB messaging
+if (int(sys.argv[1])) == 1 :
+    sender = imagezmq.ImageSender(connect_to=ipAddress)
+elif (int(sys.argv[1])) == 2 :
+    sender = imagezmq.ImageSender(connect_to='tcp://*:6666', REQ_REP=False)
 
-#if use_led:
-    #GPIO.setmode(GPIO.BCM)
-    #GPIO.setup(18, GPIO.OUT)
-    #GPIO.output(18, True)
+# send sender hostname with each image
+sender_name = socket.gethostname()  
 
-rpi_name = socket.gethostname()  # send RPi hostname with each image
-#picam = VideoStream(usePiCamera=True).start()
+# Opening webcam, you could change to a local video if you want
 cap = cv2.VideoCapture(0)
-time.sleep(2.0)  # allow camera sensor to warm up
+time.sleep(2.0)  # allow camera some time before sending
+
 try:
     while True:  # send images as stream until Ctrl-C
         ret, image = cap.read()
-        now = datetime.now()
-        current_time = now.strftime("%d/%m/%y %H:%M:%S.%f")
-        #current_time = "Time sent :" + current_time
-        #cv2.putText(image, current_time,(150,350), font, 1,(255,255,255),2)
-        # processing of image before sending would go here.
+        
+        # Put processing of image before sending if you want below here
         # for example, rotation, ROI selection, conversion to grayscale, etc.
-        #reply_from_hub = sender.send_image(rpi_name, image)
-        sender.send_image(current_time, image)
-	# above line shows how to capture REP reply text from Hub
+
+        # Send images and timestamp and save the reply from receiver if you are using REQ/REP
+        now = datetime.now() # Get timestamp of when the image is sent
+        current_time = now.strftime("%d/%m/%y %H:%M:%S.%f") # Change datetime to string
+
+        reply_from_receiver = sender.send_image(current_time, image)
+        #sender.send_image(current_time, image)
+	    
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program
 except Exception as ex:
@@ -60,9 +67,6 @@ except Exception as ex:
     print('Traceback error:', ex)
     traceback.print_exc()
 finally:
-    #if use_led:
-        #GPIO.output(18, False)  # turn off LEDs
-        #GPIO.cleanup()  # close GPIO channel and release it
     cap.release()  # stop the camera thread
     sender.close()  # close the ZMQ socket and context
     sys.exit()

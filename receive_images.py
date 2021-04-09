@@ -1,20 +1,17 @@
-"""timing_receive_images.py -- receive and display images, then print FPS stats
+"""
+timing_receive_images.py -- receive and display images, then print FPS stats
 
 A timing program that uses imagezmq to receive and display an image stream
-from one or more Raspberry Pi computers and print timing and FPS statistics.
+from one or many devices and print timing and FPS statistics.
 
-1. Run this program in its own terminal window on the mac:
-python timing_receive_images.py
+1. Run this program in its own terminal window on the receiver:
+python receive_images.py
 
-This "receive and display images" program must be running before starting
-the RPi image sending program.
-
-2. Run the image sending program on the RPi:
-python timing_send_images.py
+2. Run the image sending program on the sender:
+python send_images.py
 
 A cv2.imshow() window will appear on the Mac showing the tramsmitted images
-as a video stream. You can repeat Step 2 and start the timing_send_images.py
-on multiple RPis and each one will cause a new cv2.imshow() window to open.
+as a video stream.
 
 To end the programs, press Ctrl-C in the terminal window of the receiving
 program first, so that FPS and timing statistics will be accurate. Then, press
@@ -25,21 +22,40 @@ import sys
 
 import time
 import traceback
-import cv2
+from cv2 import cv2
 from collections import defaultdict
 from imutils.video import FPS
 import imagezmq
 from datetime import datetime
 
+# Font for text on video 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-# instantiate image_hub
-#image_hub = imagezmq.ImageHub(open_port='tcp://localhost:5555', REQ_REP=False)
-image_hub = imagezmq.ImageHub()
+# IP Address Receiver
+if len(sys.argv) == 2 : # If there is no ip address input
+    ipAddress = 'tcp://*:6666'
+    print ("Receiving on = " + ipAddress)
+elif len(sys.argv) == 3 : # If there is ip address input
+    ipAddress = 'tcp://'+sys.argv[2]+':6666'
+    print ("Receiving on = " + ipAddress)
+else :
+    print ("Error on ip address input")
+    sys.exit()
 
-image_count = 0
-sender_image_counts = defaultdict(int)  # dict for counts by sender
-first_image = True
+# instantiate image_hub
+# Specify the type messaging and receiver ip address
+# 1 for REQ/REP messaging
+# 2 for PUB/SUB messaging
+image_hub = imagezmq.ImageHub()
+if (int(sys.argv[1])) == 1 :
+    image_hub = imagezmq.ImageHub(open_port=ipAddress)
+elif (int(sys.argv[1])) == 2 :
+    image_hub = imagezmq.ImageHub(open_port=ipAddress, REQ_REP=False)
+
+
+image_count = 0 # All images received counts
+sender_image_counts = defaultdict(int)  # Image counts per sender
+first_image = True # Flag for first image received
 
 try:
     while True:  # receive images until Ctrl-C is pressed
@@ -76,12 +92,15 @@ try:
         cv2.putText(image, 'Time Elasped =' + str(time_elasped),(5,400), font, 1,(255,255,0),2)
         cv2.putText(image, 'Approx FPS =' + str(fps_running),(5,450), font, 1,(0,255,0),2)
 
-        cv2.imshow('CLient_1', image)  # display images 1 window
+        cv2.imshow('Client_1', image)  # display images 1 window
         cv2.waitKey(1)
         # other image processing code, such as saving the image, would go here.
         # often the text in "sent_from" will have additional information about
         # the image that will be used in processing the image.
-        image_hub.send_reply(b"OK")  # REP reply
+
+        # Reply the sender mesage
+        if (int(sys.argv[1])) == 1 :
+            image_hub.send_reply(b"OK")  # REP reply
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program; FPS stats computed below
 except Exception as ex:
