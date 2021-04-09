@@ -17,8 +17,11 @@ pip3 install imutils
 1. 1 is for REQ/REP messaging
 2. 2 is fot PUB/SUB messaging
 
-# Receive image
+### Receive image
 python3 receive_images.py 1/2 ipaddress
 
-# Send Image
+### Send Image
 python3 receive_images.py 1/2 ipaddress
+
+### Example 
+python3 receive_images.py 1 10.10.4.2
