@@ -25,3 +25,4 @@ python3 receive_images.py 1/2 ipaddress
 
 ### Example 
 python3 receive_images.py 1 10.10.4.2
+python3 send_images.py 1 10.10.4.2
