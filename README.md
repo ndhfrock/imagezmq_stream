@@ -18,7 +18,7 @@ pip3 install imutils
 2. 2 is fot PUB/SUB messaging
 
 # Receive image
-python3 receive_images.py <1/2> <ipaddress>
+python3 receive_images.py 1/2 ipaddress
 
 # Send Image
-python3 receive_images.py <1/2> <ipaddress>
+python3 receive_images.py 1/2 ipaddress
