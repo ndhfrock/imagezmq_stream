@@ -57,7 +57,9 @@ try:
         now = datetime.now() # Get timestamp of when the image is sent
         current_time = now.strftime("%d/%m/%y %H:%M:%S.%f") # Change datetime to string
 
-        reply_from_receiver = sender.send_image(current_time, image)
+
+        msg = [sender_name, current_time]        
+        reply_from_receiver = sender.send_image(msg, image)
         #sender.send_image(current_time, image)
 	    
 except (KeyboardInterrupt, SystemExit):

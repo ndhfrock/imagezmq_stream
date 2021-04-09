@@ -60,20 +60,20 @@ first_image = True # Flag for first image received
 try:
     while True:  # receive images until Ctrl-C is pressed
 	# Receives Image
-        sent_time_str, image = image_hub.recv_image() 
+        msg_received, image = image_hub.recv_image() 
 
 	# Get receives time
         received_time_datetime = datetime.now() 
 
         # Change sent time to datetime & receive time to string
-        sent_time_datetime = datetime.strptime(sent_time_str, "%d/%m/%y %H:%M:%S.%f") 
+        sent_time_datetime = datetime.strptime(msg_received[1], "%d/%m/%y %H:%M:%S.%f") 
         received_time_str = received_time_datetime.strftime("%d/%m/%y %H:%M:%S.%f")
 
 	# Difference beetween sent & receives
         delta_datetime = (received_time_datetime - sent_time_datetime).total_seconds()
 
 	# Put text on images for testing
-        cv2.putText(image, "Sent :" + sent_time_str,(5,200), font, 1,(255,0,0),2)
+        cv2.putText(image, "Sent :" + msg_received[1],(5,200), font, 1,(255,0,0),2)
         cv2.putText(image, "Received :" + received_time_str,(5,250), font, 1,(255,0,255),2)
         cv2.putText(image, 'Delta Time =' + str(delta_datetime),(5,300), font, 1,(0,0,255),2)
         
@@ -83,16 +83,16 @@ try:
             first_image = False
         fps.update()
         image_count += 1  # global count of all images received
-        sender_image_counts['Client_1'] += 1  # count images for each RPi name
-        cv2.putText(image, 'Image Number =' + str(sender_image_counts['Client_1']),(5,350), font, 1,(0,255,255),2)
+        sender_image_counts[msg_received[0]] += 1  # count images for each RPi name
+        cv2.putText(image, 'Image Number =' + str(sender_image_counts[msg_received[0]]),(5,350), font, 1,(0,255,255),2)
         
 	# Calculate FPS while test is running
         time_elasped = (datetime.now() - start_test_time).total_seconds()
-        fps_running = sender_image_counts['Client_1'] / time_elasped
+        fps_running = sender_image_counts[msg_received[0]] / time_elasped
         cv2.putText(image, 'Time Elasped =' + str(time_elasped),(5,400), font, 1,(255,255,0),2)
         cv2.putText(image, 'Approx FPS =' + str(fps_running),(5,450), font, 1,(0,255,0),2)
 
-        cv2.imshow('Client_1', image)  # display images 1 window
+        cv2.imshow(msg_received[0], image)  # display images 1 window
         cv2.waitKey(1)
         # other image processing code, such as saving the image, would go here.
         # often the text in "sent_from" will have additional information about
