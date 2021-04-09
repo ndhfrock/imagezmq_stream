@@ -54,8 +54,9 @@ elif (int(sys.argv[1])) == 2 :
 
 image_count = 0 # All images received counts
 sender_image_counts = defaultdict(int)  # Image counts per sender
-sender_image__start_time = defaultdict(datetime)
-sender_image__start_stop = defaultdict(datetime)
+sender_image_start_time = defaultdict(datetime) # Sender start time
+sender_image_elasped_time = defaultdict() # Sender elasped time
+sender_image_fps = defaultdict() # Sender fps
 first_image = True # Flag for first image received
 
 try:
@@ -79,17 +80,17 @@ try:
         cv2.putText(image, 'Delta Time =' + str(delta_datetime),(5,300), font, 1,(0,0,255),2)
         
         if sender_image_counts[msg_received[0]] == 0:
-            sender_image__start_time[msg_received[0]] = datetime.now()
+            sender_image_start_time[msg_received[0]] = datetime.now()
             first_image = False
         image_count += 1  # global count of all images received
         sender_image_counts[msg_received[0]] += 1  # count images for each RPi name
         cv2.putText(image, 'Image Number =' + str(sender_image_counts[msg_received[0]]),(5,350), font, 1,(0,255,255),2)
         
 	    # Calculate FPS while test is running
-        time_elasped = (datetime.now() - sender_image__start_time[msg_received[0]]).total_seconds()
-        fps_running = sender_image_counts[msg_received[0]] / time_elasped
-        cv2.putText(image, 'Time Elasped =' + str(time_elasped),(5,400), font, 1,(255,255,0),2)
-        cv2.putText(image, 'Approx FPS =' + str(fps_running),(5,450), font, 1,(0,255,0),2)
+        sender_image_elasped_time[msg_received[0]] = (datetime.now() - sender_image_start_time[msg_received[0]]).total_seconds()
+        sender_image_fps[msg_received[0]] = sender_image_counts[msg_received[0]] / sender_image_elasped_time[msg_received[0]]
+        cv2.putText(image, 'Time Elasped =' + str(sender_image_elasped_time[msg_received[0]]),(5,400), font, 1,(255,255,0),2)
+        cv2.putText(image, 'Approx FPS =' + str(sender_image_fps[msg_received[0]]),(5,450), font, 1,(0,255,0),2)
 
         cv2.imshow(msg_received[0], image)  # display images 1 window
         cv2.waitKey(1)
@@ -113,15 +114,18 @@ finally:
     print('Total Number of Images received: {:,g}'.format(image_count))
     if first_image:  # never got images from any sender
         sys.exit()
-    print('Number of Images received from each sender:')
+    print('Number of Images, elasped time, and fps received from each sender:')
     for sender in sender_image_counts:
-        print('    ', sender, ': {:,g}'.format(sender_image_counts[sender]))
+        print('    ', sender)
+        print('    ', '  ', 'Image sent:: {:,g}'.format(sender_image_counts[sender]))
+        print('    ', '  ', 'Elasped time: {:,.2f} seconds'.format(sender_image_elasped_time[msg_received[0]]))
+        print('    ', '  ', 'Approximate FPS: {:.2f}'.format(sender_image_fps[msg_received[0]]))
+    
+    # Printing last image received
     image_size = image.shape
     print('Size of last image received: ', image_size)
     uncompressed_size = image_size[0] * image_size[1] * image_size[2]
     print('    = {:,g} bytes'.format(uncompressed_size))
-    print('Elasped time: {:,.2f} seconds'.format(time_elasped))
-    print('Approximate FPS: {:.2f}'.format(fps_running))
     cv2.destroyAllWindows()  # closes the windows opened by cv2.imshow()
     image_hub.close()  # closes ZMQ socket and context
     sys.exit()
