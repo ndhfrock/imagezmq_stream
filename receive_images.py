@@ -118,8 +118,8 @@ finally:
     for sender in sender_image_counts:
         print('    ', sender)
         print('    ', '  ', 'Image sent:: {:,g}'.format(sender_image_counts[sender]))
-        print('    ', '  ', 'Elasped time: {:,.2f} seconds'.format(sender_image_elasped_time[msg_received[0]]))
-        print('    ', '  ', 'Approximate FPS: {:.2f}'.format(sender_image_fps[msg_received[0]]))
+        print('    ', '  ', 'Elasped time: {:,.2f} seconds'.format(sender_image_elasped_time[sender))
+        print('    ', '  ', 'Approximate FPS: {:.2f}'.format(sender_image_fps[sender]))
     
     # Printing last image received
     image_size = image.shape
