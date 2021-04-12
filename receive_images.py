@@ -66,11 +66,11 @@ try:
 
 	    # Get receives time
         received_time_datetime = datetime.now() 
-
-        # Change sent time to datetime & receive time to string
-        sent_time_datetime = datetime.strptime(msg_received[1], "%d/%m/%y %H:%M:%S.%f") 
         received_time_str = received_time_datetime.strftime("%d/%m/%y %H:%M:%S.%f")
 
+        # Change sent time to datetime
+        sent_time_datetime = datetime.strptime(msg_received[1], "%d/%m/%y %H:%M:%S.%f") 
+        
 	    # Difference beetween sent & receives
         delta_datetime = (received_time_datetime - sent_time_datetime).total_seconds()
 
@@ -80,7 +80,7 @@ try:
         cv2.putText(image, 'Delta Time =' + str(delta_datetime),(5,300), font, 1,(0,0,255),2)
         
         if sender_image_counts[msg_received[0]] == 0:
-            sender_image_start_time[msg_received[0]] = datetime.now()
+            sender_image_start_time[msg_received[0]] = received_time_datetime
             first_image = False
         image_count += 1  # global count of all images received
         sender_image_counts[msg_received[0]] += 1  # count images for each RPi name

@@ -53,14 +53,16 @@ try:
         # Put processing of image before sending if you want below here
         # for example, rotation, ROI selection, conversion to grayscale, etc.
 
+        # now = datetime.now() # Get timestamp of when the image is sent
+        # current_time = now.strftime("%d/%m/%y %H:%M:%S.%f") # Change datetime to string
+
+        msg = [sender_name, datetime.now.strftime("%d/%m/%y %H:%M:%S.%f")]  # Put sender name and timestamp on one message
+        
         # Send images and timestamp and save the reply from receiver if you are using REQ/REP
-        now = datetime.now() # Get timestamp of when the image is sent
-        current_time = now.strftime("%d/%m/%y %H:%M:%S.%f") # Change datetime to string
-
-
-        msg = [sender_name, current_time]        
-        reply_from_receiver = sender.send_image(msg, image)
-        #sender.send_image(current_time, image)
+        if (int(sys.argv[1])) == 1 :
+            reply_from_receiver = sender.send_image(msg, image)  # Send image, sender name, and timestamp at the sametime
+        elif (int(sys.argv[1])) == 2 :
+            sender.send_image(msg, image)  # Send image, sender name, and timestamp at the sametime
 	    
 except (KeyboardInterrupt, SystemExit):
     pass  # Ctrl-C was pressed to end program
