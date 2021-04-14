@@ -43,7 +43,7 @@ elif (int(sys.argv[1])) == 2 :
 sender_name = socket.gethostname()  
 
 # Opening webcam, you could change to a local video if you want
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('test_video.mp4')
 time.sleep(2.0)  # allow camera some time before sending
 
 try:
@@ -56,8 +56,8 @@ try:
         # now = datetime.now() # Get timestamp of when the image is sent
         # current_time = now.strftime("%d/%m/%y %H:%M:%S.%f") # Change datetime to string
 
-        msg = [sender_name, datetime.now.strftime("%d/%m/%y %H:%M:%S.%f")]  # Put sender name and timestamp on one message
-        
+        msg = [sender_name, datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")]  # Put sender name and timestamp on one message
+
         # Send images and timestamp and save the reply from receiver if you are using REQ/REP
         if (int(sys.argv[1])) == 1 :
             reply_from_receiver = sender.send_image(msg, image)  # Send image, sender name, and timestamp at the sametime

@@ -93,7 +93,7 @@ try:
         cv2.putText(image, 'Approx FPS =' + str(sender_image_fps[msg_received[0]]),(5,450), font, 1,(0,255,0),2)
 
         cv2.imshow(msg_received[0], image)  # display images 1 window
-        cv2.waitKey(1)
+        cv2.waitKey(32)
         # other image processing code, such as saving the image, would go here.
         # often the text in "sent_from" will have additional information about
         # the image that will be used in processing the image.
